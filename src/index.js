@@ -1,0 +1,5 @@
+// @flow strict
+
+const createServer = require('./server');
+
+module.exports = { createServer };
