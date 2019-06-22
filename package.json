@@ -1,6 +1,6 @@
 {
   "name": "clickroad",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Lightweight application metrics collector",
   "author": "Nikita Gusakov <gusnkt@gmail.com>",
   "homepage": "https://github.com/clickroad/clickroad-server#readme",
