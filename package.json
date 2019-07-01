@@ -1,0 +1,72 @@
+{
+  "name": "clickroad",
+  "version": "0.0.2",
+  "description": "Lightweight application metrics collector",
+  "author": "Nikita Gusakov <gusnkt@gmail.com>",
+  "homepage": "https://github.com/dialogs/clickroad-server#readme",
+  "license": "Apache-2.0",
+  "main": "src/index.js",
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dialogs/clickroad-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dialogs/clickroad-server/issues"
+  },
+  "scripts": {
+    "start": "babel-node src/start.js",
+    "format": "prettier --write 'src/**/*.{js,json,md}'",
+    "test": "flow check",
+    "prebuild": "npm test",
+    "build": "babel src -d lib",
+    "preversion": "npm run build",
+    "postversion": "npm publish",
+    "postpublish": "git push --follow-tags"
+  },
+  "dependencies": {
+    "@grpc/proto-loader": "0.5.1",
+    "env-schema": "0.1.0",
+    "fastify": "2.4.1",
+    "fastify-cors": "2.1.3",
+    "fastify-helmet": "3.0.1",
+    "fastify-metrics": "4.0.3",
+    "grpc": "1.21.1",
+    "kafkajs": "1.8.0",
+    "knex": "0.17.6",
+    "lodash": "4.17.11",
+    "pg": "7.11.0",
+    "pino-pretty": "3.2.0",
+    "protobufjs": "6.8.8",
+    "uuid": "3.3.2"
+  },
+  "devDependencies": {
+    "@babel/cli": "7.4.4",
+    "@babel/core": "7.4.5",
+    "@babel/node": "7.4.5",
+    "@babel/plugin-transform-flow-comments": "7.4.4",
+    "flow-bin": "0.101.0",
+    "husky": "2.4.1",
+    "jest": "24.8.0",
+    "lint-staged": "8.2.1",
+    "prettier": "1.18.2"
+  },
+  "babel": {
+    "plugins": [
+      "@babel/plugin-transform-flow-comments"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,json,md}": [
+      "prettier --write",
+      "git add"
+    ]
+  }
+}

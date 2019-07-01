@@ -1,0 +1,160 @@
+---
+version: '2'
+
+volumes:
+  postgres-volume:
+  kafka-volume:
+  zookeeper-volume:
+  redash-postgres-volume:
+  redash-redis-volume:
+
+x-redash-service: &redash-service
+  image: redash/redash:7.0.0.b18042
+  depends_on:
+    - postgres
+    - redash-redis
+    - redash-postgres
+  restart: always
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    restart: always
+    volumes:
+      - zookeeper-volume:/var/lib/zookeeper/data
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    restart: always
+    depends_on:
+      - zookeeper
+    ports:
+      - 29092:29092
+    volumes:
+      - kafka-volume:/var/lib/kafka/data
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  postgres:
+    image: postgres
+    restart: always
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres-volume:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: clickroad
+      POSTGRES_USER: clickroad
+      POSTGRES_PASSWORD: super-secret
+
+  clickroad-rest-server:
+    image: quay.io/dlgim/clickroad-server:19
+    restart: always
+    depends_on:
+      - kafka
+    ports:
+      - 3000:3000
+    environment:
+      MODE: rest-server
+      KAFKA_BROKER_LIST: kafka:29092
+
+  clickroad-grpc-server:
+    image: quay.io/dlgim/clickroad-server:19
+    restart: always
+    depends_on:
+      - kafka
+    ports:
+      - 3001:3001
+    environment:
+      MODE: grpc-server
+      KAFKA_BROKER_LIST: kafka:29092
+
+  clickroad-worker:
+    image: quay.io/dlgim/clickroad-server:19
+    restart: always
+    depends_on:
+      - kafka
+      - postgres
+    environment:
+      MODE: worker
+      KAFKA_BROKER_LIST: kafka:29092
+      PG_CONNECTION_STRING: postgres://clickroad:super-secret@postgres/clickroad
+
+  redash-postgres:
+    image: postgres
+    restart: always
+    volumes:
+      - redash-postgres-volume:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: redash
+      POSTGRES_USER: redash
+      POSTGRES_PASSWORD: super-secret
+
+  redash-redis:
+    image: redis
+    restart: always
+    volumes:
+      - redash-redis-volume:/data
+
+  redash-server-migrate-db:
+    <<: *redash-service
+    command: create_db
+    restart: "no"
+    depends_on:
+      - redash-postgres
+    environment:
+      REDASH_REDIS_URL: "redis://redash-redis:6379/0"
+      REDASH_DATABASE_URL: "postgresql://redash:super-secret@redash-postgres/redash"
+
+  redash-server:
+    <<: *redash-service
+    command: server
+    restart: always
+    ports:
+      - "5000:5000"
+    depends_on:
+      - redash-redis
+      - redash-postgres
+    environment:
+      REDASH_LOG_LEVEL: "INFO"
+      REDASH_WEB_WORKERS: 4
+      REDASH_REDIS_URL: "redis://redash-redis:6379/0"
+      REDASH_DATABASE_URL: "postgresql://redash:super-secret@redash-postgres/redash"
+
+  redash-scheduler:
+    <<: *redash-service
+    command: scheduler
+    restart: always
+    environment:
+      QUEUES: "celery"
+      WORKERS_COUNT: 1
+      REDASH_REDIS_URL: "redis://redash-redis:6379/0"
+      REDASH_DATABASE_URL: "postgresql://redash:super-secret@redash-postgres/redash"
+
+  redash-scheduled-worker:
+    <<: *redash-service
+    command: worker
+    restart: always
+    environment:
+      QUEUES: "scheduled_queries,schemas"
+      WORKERS_COUNT: 1
+      REDASH_REDIS_URL: "redis://redash-redis:6379/0"
+      REDASH_DATABASE_URL: "postgresql://redash:super-secret@redash-postgres/redash"
+
+  redash-adhoc-worker:
+    <<: *redash-service
+    command: worker
+    restart: always
+    environment:
+      QUEUES: "queries"
+      WORKERS_COUNT: 2
+      REDASH_REDIS_URL: "redis://redash-redis:6379/0"
+      REDASH_DATABASE_URL: "postgresql://redash:super-secret@redash-postgres/redash"

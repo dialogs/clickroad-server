@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package clickroad;
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+
+message TrackContext {
+  map<string, string> context = 1;
+}
+
+message TrackScreenView {
+  string name = 1;
+  google.protobuf.StringValue source = 2;
+  google.protobuf.StringValue url = 3;
+}
+
+message TrackEvent {
+  string category = 1;
+  string action = 2;
+  google.protobuf.StringValue label = 3;
+  google.protobuf.DoubleValue value = 4;
+}
+
+message TrackTiming {
+  string category = 1;
+  string variable = 2;
+  int64 time = 3;
+  google.protobuf.StringValue label = 4;
+}
+
+message TrackSocial {
+  string network = 1;
+  string action = 2;
+  string target = 3;
+}
+
+message TrackError {
+  string message = 1;
+  bool fatal = 2;
+}
+
+message TrackMetric {
+  google.protobuf.Timestamp time = 1;
+  oneof metric {
+    TrackContext context = 2;
+    TrackScreenView screen_view = 3;
+    TrackEvent event = 4;
+    TrackTiming timing = 5;
+    TrackSocial social = 6;
+    TrackError error = 7;
+  }
+}
+
+message RequestTrackEvent {
+  string cid = 1;
+  repeated TrackMetric metrics = 2;
+}
+
+message ResponseTrackEvent {
+  string cid = 1;
+}
+
+service ClickRoad {
+  rpc TrackEvent(RequestTrackEvent) returns (ResponseTrackEvent) {}
+}

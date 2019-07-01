@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package clickroad;
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+import "clickroad-public.proto";
+
+message MetricMessage {
+  string cid = 1;
+  string ip = 2;
+  TrackMetric metric = 3;
+}
