@@ -1,11 +1,10 @@
 // @flow strict
 
-import type { Producer } from './types';
-const path = require('path');
+import type { Producer } from '../types';
 const { Server, ServerCredentials, status } = require('grpc');
-const { ClickRoad } = require('./proto/clickroad-public');
-const { MetricMessage } = require('./proto/clickroad-private');
-const getOrCreateContextId = require('./utils/context-id');
+const { ClickRoad } = require('../proto/clickroad-public');
+const { MetricMessage } = require('../proto/clickroad-private');
+const getOrCreateContextId = require('../utils/context-id');
 
 type Config = {
   logger: typeof console,

@@ -1,5 +1,6 @@
 // @flow strict
 
+import type { Persister } from '../types';
 import type { MetricMessage } from '../proto/clickroad-private';
 const createKnex = require('knex');
 const { msFromTimestamp } = require('../proto/timestamp');
@@ -12,7 +13,7 @@ const timestamp = (time: number) => new Date(time).toISOString();
 const optValue = <T>(value: { value: T | null } | null): T | null =>
   value && value.value;
 
-async function createPgPersister({ connection }: Config) {
+async function createPgPersister({ connection }: Config): Promise<Persister> {
   const pg = createKnex({
     connection,
     client: 'pg',

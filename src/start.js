@@ -1,11 +1,13 @@
 // @flow strict
 
+const {
+  createRestServer,
+  createGrpcServer,
+  createKafkaProducer,
+  createKafkaConsumer,
+  createPgPersister
+} = require('./index')
 const config = require('./config');
-const createRestServer = require('./rest-server');
-const createGrpcServer = require('./grpc-server');
-const createKafkaProducer = require('./producer/kafka-producer');
-const createKafkaConsumer = require('./consumer/kafka-consumer');
-const createPgPersister = require('./persister/pg-persister');
 
 const parseBrokerList = (raw: string) =>
   raw

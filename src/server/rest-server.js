@@ -1,13 +1,12 @@
 // @flow strict
 
-import type { Producer } from './types';
+import type { Producer } from '../types';
 const fastify = require('fastify');
 const fastifyCors = require('fastify-cors');
 const fastifyHelmet = require('fastify-helmet');
 const fastifyPrometheus = require('fastify-metrics');
-const getOrCreateContextId = require('./utils/context-id');
-const { metricMessageFromJson } = require('./proto/clickroad-private');
-const createKafkaProducer = require('./producer/kafka-producer');
+const getOrCreateContextId = require('../utils/context-id');
+const { metricMessageFromJson } = require('../proto/clickroad-private');
 
 type Config = {
   producer: Producer,
