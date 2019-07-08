@@ -20,7 +20,15 @@ function msFromTimestamp({ seconds, nanos }: Timestamp): number {
   return secondsMs + nanosMs;
 }
 
+const packValue = <T>(value: T | null): { value: T } | null =>
+  value === null ? null : { value };
+
+const unpackValue = <T>(value: { value: T | null } | null): T | null =>
+  value && value.value;
+
 module.exports = {
+  packValue,
+  unpackValue,
   timestampFromMs,
   msFromTimestamp,
 };

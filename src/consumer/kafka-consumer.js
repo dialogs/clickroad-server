@@ -12,8 +12,6 @@ type Config = {
   persister: Persister,
 };
 
-const deserialize = (message: Buffer) => JSON.parse(message.toString('utf-8'));
-
 async function createKafkaConsumer(config: Config): Promise<Consumer> {
   const kafka = new Kafka({
     clientId: config.clientId,

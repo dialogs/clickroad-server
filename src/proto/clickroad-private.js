@@ -2,7 +2,8 @@
 
 const path = require('path');
 const protobuf = require('protobufjs');
-const { timestampFromMs } = require('./timestamp');
+const Long = require('long');
+const { packValue, timestampFromMs } = require('./utils');
 
 const root = protobuf.loadSync(
   path.resolve(__dirname, '../../proto/clickroad-private.proto'),
@@ -22,7 +23,7 @@ function metricMessageFromJson(cid: string, ip: string, json: Array<any>) {
         cid,
         metric: {
           time,
-          context: payload,
+          context: { context: payload },
         },
       });
     }
@@ -33,7 +34,11 @@ function metricMessageFromJson(cid: string, ip: string, json: Array<any>) {
         cid,
         metric: {
           time,
-          screenView: { name, source, url },
+          screenView: {
+            name,
+            source: packValue(source),
+            url: packValue(url),
+          },
         },
       });
     }
@@ -44,18 +49,28 @@ function metricMessageFromJson(cid: string, ip: string, json: Array<any>) {
         cid,
         metric: {
           time,
-          event: { category, action, label, value },
+          event: {
+            category,
+            action,
+            label: packValue(label),
+            value: packValue(value),
+          },
         },
       });
     }
     case 'timing': {
-      const [, , category, variable, time, label] = json;
+      const [, , category, variable, timingTime, label] = json;
       return MetricMessage.create({
         ip,
         cid,
         metric: {
           time,
-          timing: { category, variable, time, label },
+          timing: {
+            category,
+            variable,
+            time: Long.fromNumber(timingTime),
+            label: packValue(label),
+          },
         },
       });
     }

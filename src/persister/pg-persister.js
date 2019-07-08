@@ -3,15 +3,13 @@
 import type { Persister } from '../types';
 import type { MetricMessage } from '../proto/clickroad-private';
 const createKnex = require('knex');
-const { msFromTimestamp } = require('../proto/timestamp');
+const { unpackValue, msFromTimestamp } = require('../proto/utils');
 
 type Config = {
   connection: string,
 };
 
 const timestamp = (time: number) => new Date(time).toISOString();
-const optValue = <T>(value: { value: T | null } | null): T | null =>
-  value && value.value;
 
 async function createPgPersister({ connection }: Config): Promise<Persister> {
   const pg = createKnex({
@@ -120,8 +118,8 @@ async function createPgPersister({ connection }: Config): Promise<Persister> {
           client_time,
           server_time,
           name,
-          source: optValue(source),
-          url: optValue(url),
+          source: unpackValue(source),
+          url: unpackValue(url),
         });
       } else if (metric.event) {
         const { category, action, label, value } = metric.event;
@@ -132,8 +130,8 @@ async function createPgPersister({ connection }: Config): Promise<Persister> {
           server_time,
           category,
           action,
-          label: optValue(label),
-          value: optValue(value),
+          label: unpackValue(label),
+          value: unpackValue(value),
         });
       } else if (metric.timing) {
         const { category, variable, time, label } = metric.timing;
@@ -145,7 +143,7 @@ async function createPgPersister({ connection }: Config): Promise<Persister> {
           category,
           variable,
           time: time.toString(),
-          label: optValue(label),
+          label: unpackValue(label),
         });
       } else if (metric.social) {
         const { network, action, target } = metric.social;

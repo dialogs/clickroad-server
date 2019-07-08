@@ -11,5 +11,5 @@ module.exports = {
   createGrpcServer,
   createKafkaProducer,
   createKafkaConsumer,
-  createPgPersister
+  createPgPersister,
 };
