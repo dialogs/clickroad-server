@@ -18,12 +18,17 @@ function metricMessageFromJson(cid: string, ip: string, json: Array<any>) {
   switch (type) {
     case 'context': {
       const [, , payload] = json;
+      const context = {};
+      Object.keys(payload).forEach((key) => {
+        context[key] = String(payload[key]);
+      });
+
       return MetricMessage.create({
         ip,
         cid,
         metric: {
           time,
-          context: { context: payload },
+          context: { context },
         },
       });
     }

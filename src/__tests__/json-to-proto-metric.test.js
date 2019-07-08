@@ -9,18 +9,24 @@ const IP = '1.1.1.1';
 const TIME = Date.now();
 
 describe('json-to-proto-metric', () => {
-  it('should correctly parse context metrics', () => {
-    const context = { appName: 'test' };
-    const metric = metricMessageFromJson(CID, IP, ['context', TIME, context]);
-    expect(MetricMessage.verify(metric)).toBeNull();
+  test.each([[{ appName: 'test' }], [{ foo: 1 }], [{ foo: null }]])(
+    'should correctly parse "context" metrics context=%p',
+    (context) => {
+      const metric = metricMessageFromJson(CID, IP, ['context', TIME, context]);
+      expect(MetricMessage.verify(metric)).toBeNull();
 
-    const parsed = MetricMessage.decode(MetricMessage.encode(metric).finish());
-    expect(parsed.ip).toBe(IP);
-    expect(parsed.cid).toBe(CID);
-    expect(msFromTimestamp(parsed.metric.time)).toBe(TIME);
+      const parsed = MetricMessage.decode(
+        MetricMessage.encode(metric).finish(),
+      );
+      expect(parsed.ip).toBe(IP);
+      expect(parsed.cid).toBe(CID);
+      expect(msFromTimestamp(parsed.metric.time)).toBe(TIME);
 
-    expect(parsed.metric.context.context).toEqual(context);
-  });
+      Object.keys(parsed.metric.context.context).forEach((key) => {
+        expect(parsed.metric.context.context[key]).toBe(String(context[key]));
+      });
+    },
+  );
 
   test.each([
     ['name', 'source', 'url'],
