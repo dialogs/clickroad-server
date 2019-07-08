@@ -46,4 +46,4 @@ export LDFLAGS=-L/usr/local/opt/openssl/lib
 
 ## License
 
-[MIT](LICENSE)
+[Apache-2.0](LICENSE)
