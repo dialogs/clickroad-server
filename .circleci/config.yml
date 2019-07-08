@@ -1,5 +1,23 @@
 version: 2
 jobs:
+  test:
+    docker:
+      - image: circleci/node:lts
+    steps:
+      - checkout
+      - run: npm ci
+      - run: npm test
+      - run:
+          environment:
+            JEST_JUNIT_OUTPUT: reports/junit/js-test-results.xml
+          command: npm test -- --ci --coverage --maxWorkers=2 --reporters=default --reporters=jest-junit
+      - run: npx codecov
+      - store_test_results:
+          path: reports/junit
+      - store_artifacts:
+          path: reports/junit
+      - store_artifacts:
+          path: coverage
   build:
     docker:
       - image: circleci/node:lts
@@ -8,7 +26,6 @@ jobs:
     steps:
       - checkout
       - run: npm ci
-      - run: npm test
       - run: npm run build
       - setup_remote_docker
       - run: docker build -t $DOCKER_IMAGE .
@@ -16,3 +33,20 @@ jobs:
       - run: docker tag $DOCKER_IMAGE $DOCKER_IMAGE:$CIRCLE_BUILD_NUM
       - run: echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin quay.io
       - run: docker push $DOCKER_IMAGE
+
+workflows:
+  version: 2
+  test-build:
+    jobs:
+      - test:
+          filters:
+            branches:
+              ignore:
+                - gh-pages
+      - build:
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - master
