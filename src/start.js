@@ -1,5 +1,6 @@
 // @flow strict
 
+const pino = require('pino');
 const {
   createRestServer,
   createGrpcServer,
@@ -15,14 +16,21 @@ const parseBrokerList = (raw: string) =>
     .map((i) => i.trim())
     .filter(Boolean);
 
+const logger = pino({
+  name: 'clickroad',
+  level: config.LOG_LEVEL,
+});
+
 async function startRestServer() {
   const producer = createKafkaProducer({
+    logger,
     topic: config.KAFKA_TOPIC,
     brokers: parseBrokerList(config.KAFKA_BROKER_LIST),
     clientId: config.KAFKA_CLIENT_ID,
   });
 
   const server = createRestServer({
+    logger,
     producer,
     trustProxy: config.TRUST_PROXY,
     enablePrometheus: true,
@@ -35,14 +43,15 @@ async function startRestServer() {
 
 async function startGrpcServer() {
   const producer = createKafkaProducer({
+    logger,
     topic: config.KAFKA_TOPIC,
     brokers: parseBrokerList(config.KAFKA_BROKER_LIST),
     clientId: config.KAFKA_CLIENT_ID,
   });
 
   const server = createGrpcServer({
+    logger,
     producer,
-    logger: console,
     trustProxy: config.TRUST_PROXY,
   });
 
@@ -53,10 +62,12 @@ async function startGrpcServer() {
 
 async function startWorker() {
   const persister = await createPgPersister({
+    logger,
     connection: config.PG_CONNECTION_STRING,
   });
 
   const consumer = await createKafkaConsumer({
+    logger,
     persister,
     topic: config.KAFKA_TOPIC,
     brokers: parseBrokerList(config.KAFKA_BROKER_LIST),
@@ -102,6 +113,6 @@ Promise.all(tasks)
     process.exit(0);
   })
   .catch((error) => {
-    console.error(error);
+    logger.error(error);
     process.exit(1);
   });

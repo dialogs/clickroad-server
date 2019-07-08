@@ -8,6 +8,7 @@ type Config = {
   REST_PORT: number,
   GRPC_HOST: string,
   GRPC_PORT: number,
+  LOG_LEVEL: string,
   TRUST_PROXY: boolean,
   KAFKA_TOPIC: string,
   KAFKA_GROUP_ID: string,
@@ -26,6 +27,7 @@ const config: Config = parseEnv({
       'REST_PORT',
       'GRPC_HOST',
       'GRPC_PORT',
+      'LOG_LEVEL',
       'TRUST_PROXY',
       'KAFKA_TOPIC',
       'KAFKA_GROUP_ID',
@@ -53,6 +55,10 @@ const config: Config = parseEnv({
       GRPC_PORT: {
         type: 'number',
         default: 3001,
+      },
+      LOG_LEVEL: {
+        type: 'string',
+        default: 'debug',
       },
       TRUST_PROXY: {
         type: 'boolean',

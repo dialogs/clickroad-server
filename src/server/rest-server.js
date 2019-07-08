@@ -1,5 +1,6 @@
 // @flow strict
 
+import type { Logger } from 'pino';
 import type { Producer } from '../types';
 const fastify = require('fastify');
 const fastifyCors = require('fastify-cors');
@@ -9,6 +10,7 @@ const getOrCreateContextId = require('../utils/context-id');
 const { metricMessageFromJson } = require('../proto/clickroad-private');
 
 type Config = {
+  logger: Logger,
   producer: Producer,
   trustProxy: boolean,
   enablePrometheus: boolean,
@@ -16,6 +18,7 @@ type Config = {
 
 function createRestServer(config: Config) {
   const app = fastify({
+    logger: config.logger,
     trustProxy: config.trustProxy,
   });
 
