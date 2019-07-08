@@ -11,6 +11,7 @@ const { metricMessageFromJson } = require('../proto/clickroad-private');
 type Config = {
   producer: Producer,
   trustProxy: boolean,
+  enablePrometheus: boolean,
 };
 
 function createRestServer(config: Config) {
@@ -20,7 +21,14 @@ function createRestServer(config: Config) {
 
   app.register(fastifyCors, {});
   app.register(fastifyHelmet, {});
-  app.register(fastifyPrometheus, { endpoint: '/metrics' });
+  if (config.enablePrometheus) {
+    app.register(fastifyPrometheus, { endpoint: '/metrics' });
+  }
+
+  app.setErrorHandler((error, req, reply) => {
+    req.log.error(error);
+    reply.send({ ok: false });
+  });
 
   app.post(
     '/rest/metrics',

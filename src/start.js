@@ -5,8 +5,8 @@ const {
   createGrpcServer,
   createKafkaProducer,
   createKafkaConsumer,
-  createPgPersister
-} = require('./index')
+  createPgPersister,
+} = require('./index');
 const config = require('./config');
 
 const parseBrokerList = (raw: string) =>
@@ -25,6 +25,7 @@ async function startRestServer() {
   const server = createRestServer({
     producer,
     trustProxy: config.TRUST_PROXY,
+    enablePrometheus: true,
   });
 
   await server.listen({ host: config.REST_HOST, port: config.REST_PORT });
