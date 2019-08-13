@@ -7,6 +7,9 @@ const {
   createKafkaProducer,
   createKafkaConsumer,
   createPgPersister,
+  createJsonSerializer,
+  createProtoSerializer,
+  createProtoDeserializer,
 } = require('./index');
 const config = require('./config');
 
@@ -21,9 +24,27 @@ const logger = pino({
   level: config.LOG_LEVEL,
 });
 
+function createSerializer() {
+  switch (config.SERIALIZATION_MODE) {
+    case 'json':
+      return createJsonSerializer();
+    default:
+      return createProtoSerializer();
+  }
+}
+
+function createDeserializer() {
+  switch (config.SERIALIZATION_MODE) {
+    default:
+      return createProtoDeserializer();
+  }
+}
+
 async function startRestServer() {
+  const serializer = createSerializer();
   const producer = createKafkaProducer({
     logger,
+    serializer,
     topic: config.KAFKA_TOPIC,
     brokers: parseBrokerList(config.KAFKA_BROKER_LIST),
     clientId: config.KAFKA_CLIENT_ID,
@@ -42,8 +63,10 @@ async function startRestServer() {
 }
 
 async function startGrpcServer() {
+  const serializer = createSerializer();
   const producer = createKafkaProducer({
     logger,
+    serializer,
     topic: config.KAFKA_TOPIC,
     brokers: parseBrokerList(config.KAFKA_BROKER_LIST),
     clientId: config.KAFKA_CLIENT_ID,
@@ -66,9 +89,11 @@ async function startWorker() {
     connection: config.PG_CONNECTION_STRING,
   });
 
+  const deserializer = createDeserializer();
   const consumer = await createKafkaConsumer({
     logger,
     persister,
+    deserializer,
     topic: config.KAFKA_TOPIC,
     brokers: parseBrokerList(config.KAFKA_BROKER_LIST),
     groupId: config.KAFKA_GROUP_ID,

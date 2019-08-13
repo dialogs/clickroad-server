@@ -1,6 +1,6 @@
 // @flow strict
 
-import type { Producer } from '../types';
+import type { Producer, Serializer } from '../types';
 const { Kafka } = require('kafkajs');
 const { MetricMessage } = require('../proto/clickroad-private');
 
@@ -8,6 +8,7 @@ type Config = {
   topic: string,
   brokers: Array<string>,
   clientId: string,
+  serializer: Serializer,
 };
 
 function createKafkaProducer(config: Config): Producer {
@@ -25,7 +26,7 @@ function createKafkaProducer(config: Config): Producer {
         topic: config.topic,
         messages: messages.map((message) => {
           return {
-            value: MetricMessage.encode(message).finish(),
+            value: config.serializer.serialize(message),
           };
         }),
       });

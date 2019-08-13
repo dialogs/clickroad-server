@@ -15,6 +15,7 @@ type Config = {
   KAFKA_CLIENT_ID: string,
   KAFKA_BROKER_LIST: string,
   PG_CONNECTION_STRING: string,
+  SERIALIZATION_MODE: 'proto' | 'json',
 };
 
 const config: Config = parseEnv({
@@ -34,6 +35,7 @@ const config: Config = parseEnv({
       'KAFKA_CLIENT_ID',
       'KAFKA_BROKER_LIST',
       'PG_CONNECTION_STRING',
+      'SERIALIZATION_MODE',
     ],
     properties: {
       MODE: {
@@ -83,6 +85,10 @@ const config: Config = parseEnv({
       PG_CONNECTION_STRING: {
         type: 'string',
         default: 'postgres://localhost/clickroad',
+      },
+      SERIALIZATION_MODE: {
+        type: 'string',
+        default: 'proto',
       },
     },
   },

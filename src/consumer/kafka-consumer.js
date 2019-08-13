@@ -1,6 +1,6 @@
 // @flow strict
 
-import type { Consumer, Persister } from '../types';
+import type { Consumer, Persister, Deserializer } from '../types';
 const { Kafka } = require('kafkajs');
 const { MetricMessage } = require('../proto/clickroad-private');
 
@@ -10,6 +10,7 @@ type Config = {
   clientId: string,
   brokers: Array<string>,
   persister: Persister,
+  deserializer: Deserializer,
 };
 
 async function createKafkaConsumer(config: Config): Promise<Consumer> {
@@ -30,7 +31,7 @@ async function createKafkaConsumer(config: Config): Promise<Consumer> {
   await consumer.run({
     partitionsConsumedConcurrently: 100,
     async eachMessage({ message }) {
-      const metric = MetricMessage.decode(message.value);
+      const metric = config.deserializer.deserialize(message.value);
 
       await config.persister.persist(metric);
     },

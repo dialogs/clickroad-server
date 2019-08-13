@@ -15,3 +15,11 @@ export interface Producer {
   stop(): Promise<void>;
   produce(messages: Array<MetricMessage>): Promise<void>;
 }
+
+export interface Serializer {
+  serialize(message: MetricMessage): Buffer;
+}
+
+export interface Deserializer {
+  deserialize(message: Buffer): MetricMessage;
+}
