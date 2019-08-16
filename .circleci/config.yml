@@ -22,7 +22,6 @@ jobs:
     docker:
       - image: circleci/node:lts
     environment:
-      DOCKER_HOST: docker.pkg.github.com
       DOCKER_IMAGE: docker.pkg.github.com/dialogs/clickroad-server/clickroad-server
     steps:
       - checkout
@@ -32,7 +31,7 @@ jobs:
       - run: docker build -t $DOCKER_IMAGE .
       - run: docker tag $DOCKER_IMAGE $DOCKER_IMAGE:latest
       - run: docker tag $DOCKER_IMAGE $DOCKER_IMAGE:$CIRCLE_BUILD_NUM
-      - run: echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin $DOCKER_HOST
+      - run: echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin docker.pkg.github.com
       - run: docker push $DOCKER_IMAGE
 
 workflows:
