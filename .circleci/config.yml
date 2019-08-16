@@ -22,7 +22,8 @@ jobs:
     docker:
       - image: circleci/node:lts
     environment:
-      DOCKER_IMAGE: quay.io/dlgim/clickroad-server
+      DOCKER_HOST: docker.pkg.github.com
+      DOCKER_IMAGE: docker.pkg.github.com/dialogs/clickroad-server/clickroad-server
     steps:
       - checkout
       - run: npm ci
@@ -31,7 +32,7 @@ jobs:
       - run: docker build -t $DOCKER_IMAGE .
       - run: docker tag $DOCKER_IMAGE $DOCKER_IMAGE:latest
       - run: docker tag $DOCKER_IMAGE $DOCKER_IMAGE:$CIRCLE_BUILD_NUM
-      - run: echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin quay.io
+      - run: echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin $DOCKER_HOST
       - run: docker push $DOCKER_IMAGE
 
 workflows:
