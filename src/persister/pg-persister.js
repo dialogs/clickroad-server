@@ -3,13 +3,11 @@
 import type { Persister } from '../types';
 import type { MetricMessage } from '../proto/clickroad-private';
 const createKnex = require('knex');
-const { unpackValue, msFromTimestamp } = require('../proto/utils');
+const { timestamp, unpackValue, msFromTimestamp } = require('../proto/utils');
 
 type Config = {
   connection: string,
 };
-
-const timestamp = (time: number) => new Date(time).toISOString();
 
 async function createPgPersister({ connection }: Config): Promise<Persister> {
   const pg = createKnex({

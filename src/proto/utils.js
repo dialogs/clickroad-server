@@ -5,6 +5,8 @@ type Timestamp = {
   nanos: number,
 };
 
+const timestamp = (time: number) => new Date(time).toISOString();
+
 function timestampFromMs(ms: number): Timestamp {
   return {
     seconds: parseInt(ms / 1000, 10),
@@ -27,6 +29,7 @@ const unpackValue = <T>(value: { value: T | null } | null): T | null =>
   value && value.value;
 
 module.exports = {
+  timestamp,
   packValue,
   unpackValue,
   timestampFromMs,
