@@ -7,6 +7,7 @@ const {
   createKafkaProducer,
   createKafkaConsumer,
   createPgPersister,
+  createKafkaPersister,
   createJsonSerializer,
   createProtoSerializer,
   createProtoDeserializer,
@@ -83,21 +84,35 @@ async function startGrpcServer() {
   return () => Promise.all([server.stop(), producer.stop()]);
 }
 
-async function startWorker() {
-  const persister = await createPgPersister({
-    logger,
-    connection: config.PG_CONNECTION_STRING,
-  });
+function createPersister() {
+  switch (config.PERSIST_MODE) {
+    case 'kafka':
+      return createKafkaPersister({
+        topic: config.KAFKA_PERSIST_TOPIC,
+        clientId: config.KAFKA_CLIENT_ID,
+        brokers: parseBrokerList(config.KAFKA_BROKER_LIST),
+        serializer: createSerializer(),
+      });
 
-  const deserializer = createDeserializer();
+    default:
+      return createPgPersister({
+        logger,
+        connection: config.PG_CONNECTION_STRING,
+      });
+  }
+}
+
+async function startWorker() {
+  const persister = await createPersister();
+
   const consumer = await createKafkaConsumer({
     logger,
     persister,
-    deserializer,
     topic: config.KAFKA_TOPIC,
     brokers: parseBrokerList(config.KAFKA_BROKER_LIST),
     groupId: config.KAFKA_GROUP_ID,
     clientId: config.KAFKA_CLIENT_ID,
+    deserializer: createDeserializer(),
   });
 
   return () => Promise.all([consumer.stop(), persister.stop()]);

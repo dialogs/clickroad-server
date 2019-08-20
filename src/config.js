@@ -14,7 +14,9 @@ type Config = {
   KAFKA_GROUP_ID: string,
   KAFKA_CLIENT_ID: string,
   KAFKA_BROKER_LIST: string,
+  KAFKA_PERSIST_TOPIC: string,
   PG_CONNECTION_STRING: string,
+  PERSIST_MODE: 'postgres' | 'kafka',
   SERIALIZATION_MODE: 'proto' | 'json',
 };
 
@@ -34,13 +36,16 @@ const config: Config = parseEnv({
       'KAFKA_GROUP_ID',
       'KAFKA_CLIENT_ID',
       'KAFKA_BROKER_LIST',
+      'KAFKA_PERSIST_TOPIC',
       'PG_CONNECTION_STRING',
+      'PERSIST_MODE',
       'SERIALIZATION_MODE',
     ],
     properties: {
       MODE: {
         type: 'string',
         default: 'all',
+        enum: ['all', 'worker', 'grpc-server', 'rest-server'],
       },
       REST_HOST: {
         type: 'string',
@@ -82,13 +87,23 @@ const config: Config = parseEnv({
         type: 'string',
         default: 'localhost:9092',
       },
+      KAFKA_PERSIST_TOPIC: {
+        type: 'string',
+        default: 'metrics_out',
+      },
       PG_CONNECTION_STRING: {
         type: 'string',
         default: 'postgres://localhost/clickroad',
       },
+      PERSIST_MODE: {
+        type: 'string',
+        default: 'postgres',
+        enum: ['postgres', 'kafka'],
+      },
       SERIALIZATION_MODE: {
         type: 'string',
         default: 'proto',
+        enum: ['proto', 'json'],
       },
     },
   },
