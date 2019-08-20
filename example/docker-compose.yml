@@ -3,10 +3,15 @@ version: '2'
 
 volumes:
   postgres-volume:
+    external: true
   kafka-volume:
+    external: true
   zookeeper-volume:
+    external: true
   redash-postgres-volume:
+    external: true
   redash-redis-volume:
+    external: true
 
 x-redash-service: &redash-service
   image: redash/redash:7.0.0.b18042
@@ -14,6 +19,10 @@ x-redash-service: &redash-service
     - postgres
     - redash-redis
     - redash-postgres
+  restart: always
+
+x-clickroad-service: &clickroad-service
+  image: docker.pkg.github.com/dialogs/clickroad-server/clickroad-server:latest
   restart: always
 
 services:
@@ -56,8 +65,7 @@ services:
       POSTGRES_PASSWORD: super-secret
 
   clickroad-rest-server:
-    image: quay.io/dlgim/clickroad-server:19
-    restart: always
+    <<: *clickroad-service
     depends_on:
       - kafka
     ports:
@@ -67,8 +75,7 @@ services:
       KAFKA_BROKER_LIST: kafka:29092
 
   clickroad-grpc-server:
-    image: quay.io/dlgim/clickroad-server:19
-    restart: always
+    <<: *clickroad-service
     depends_on:
       - kafka
     ports:
@@ -78,8 +85,7 @@ services:
       KAFKA_BROKER_LIST: kafka:29092
 
   clickroad-worker:
-    image: quay.io/dlgim/clickroad-server:19
-    restart: always
+    <<: *clickroad-service
     depends_on:
       - kafka
       - postgres
@@ -107,54 +113,54 @@ services:
   redash-server-migrate-db:
     <<: *redash-service
     command: create_db
-    restart: "no"
+    restart: 'no'
     depends_on:
       - redash-postgres
     environment:
-      REDASH_REDIS_URL: "redis://redash-redis:6379/0"
-      REDASH_DATABASE_URL: "postgresql://redash:super-secret@redash-postgres/redash"
+      REDASH_REDIS_URL: 'redis://redash-redis:6379/0'
+      REDASH_DATABASE_URL: 'postgresql://redash:super-secret@redash-postgres/redash'
 
   redash-server:
     <<: *redash-service
     command: server
     restart: always
     ports:
-      - "5000:5000"
+      - '5000:5000'
     depends_on:
       - redash-redis
       - redash-postgres
     environment:
-      REDASH_LOG_LEVEL: "INFO"
+      REDASH_LOG_LEVEL: 'INFO'
       REDASH_WEB_WORKERS: 4
-      REDASH_REDIS_URL: "redis://redash-redis:6379/0"
-      REDASH_DATABASE_URL: "postgresql://redash:super-secret@redash-postgres/redash"
+      REDASH_REDIS_URL: 'redis://redash-redis:6379/0'
+      REDASH_DATABASE_URL: 'postgresql://redash:super-secret@redash-postgres/redash'
 
   redash-scheduler:
     <<: *redash-service
     command: scheduler
     restart: always
     environment:
-      QUEUES: "celery"
+      QUEUES: 'celery'
       WORKERS_COUNT: 1
-      REDASH_REDIS_URL: "redis://redash-redis:6379/0"
-      REDASH_DATABASE_URL: "postgresql://redash:super-secret@redash-postgres/redash"
+      REDASH_REDIS_URL: 'redis://redash-redis:6379/0'
+      REDASH_DATABASE_URL: 'postgresql://redash:super-secret@redash-postgres/redash'
 
   redash-scheduled-worker:
     <<: *redash-service
     command: worker
     restart: always
     environment:
-      QUEUES: "scheduled_queries,schemas"
+      QUEUES: 'scheduled_queries,schemas'
       WORKERS_COUNT: 1
-      REDASH_REDIS_URL: "redis://redash-redis:6379/0"
-      REDASH_DATABASE_URL: "postgresql://redash:super-secret@redash-postgres/redash"
+      REDASH_REDIS_URL: 'redis://redash-redis:6379/0'
+      REDASH_DATABASE_URL: 'postgresql://redash:super-secret@redash-postgres/redash'
 
   redash-adhoc-worker:
     <<: *redash-service
     command: worker
     restart: always
     environment:
-      QUEUES: "queries"
+      QUEUES: 'queries'
       WORKERS_COUNT: 2
-      REDASH_REDIS_URL: "redis://redash-redis:6379/0"
-      REDASH_DATABASE_URL: "postgresql://redash:super-secret@redash-postgres/redash"
+      REDASH_REDIS_URL: 'redis://redash-redis:6379/0'
+      REDASH_DATABASE_URL: 'postgresql://redash:super-secret@redash-postgres/redash'

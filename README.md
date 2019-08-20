@@ -2,17 +2,16 @@
 
 Lightweight application metrics collector.
 
-[![CircleCI](https://img.shields.io/circleci/build/github/dialogs/clickroad-server/master.svg)](https://circleci.com/gh/dialogs/clickroad-server)
-[![codecov](https://codecov.io/gh/dialogs/clickroad-server/branch/master/graph/badge.svg)](https://codecov.io/gh/dialogs/clickroad-server)
-[![Docker Repository on Quay](https://quay.io/repository/dlgim/clickroad-server/status)](https://quay.io/repository/dlgim/clickroad-server)
+[![Build Status](https://img.shields.io/circleci/build/github/dialogs/clickroad-server/master.svg)](https://circleci.com/gh/dialogs/clickroad-server)
+[![Code Coverage](https://codecov.io/gh/dialogs/clickroad-server/branch/master/graph/badge.svg)](https://codecov.io/gh/dialogs/clickroad-server)
 
 ## Installation
 
-```
-docker pull quay.io/dlgim/clickroad-server
+```bash
+docker pull docker.pkg.github.com/dialogs/clickroad-server/clickroad-server:latest
 ```
 
-[Docker compose example](example/docker-compose.yml)
+[Docker Compose example](example/docker-compose.yml)
 
 ## Configuration
 
