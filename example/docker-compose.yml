@@ -22,7 +22,7 @@ x-redash-service: &redash-service
   restart: always
 
 x-clickroad-service: &clickroad-service
-  image: docker.pkg.github.com/dialogs/clickroad-server/clickroad-server:latest
+  image: docker.pkg.github.com/dialogs/clickroad-server/clickroad-server:54
   restart: always
 
 services:
@@ -72,6 +72,7 @@ services:
       - 3000:3000
     environment:
       MODE: rest-server
+      SERIALIZATION_MODE: proto
       KAFKA_BROKER_LIST: kafka:29092
 
   clickroad-grpc-server:
@@ -82,17 +83,30 @@ services:
       - 3001:3001
     environment:
       MODE: grpc-server
+      SERIALIZATION_MODE: proto
       KAFKA_BROKER_LIST: kafka:29092
 
-  clickroad-worker:
+  clickroad-pg-worker:
     <<: *clickroad-service
     depends_on:
       - kafka
       - postgres
     environment:
       MODE: worker
+      PERSIST_MODE: postgres
       KAFKA_BROKER_LIST: kafka:29092
       PG_CONNECTION_STRING: postgres://clickroad:super-secret@postgres/clickroad
+
+  clickroad-kafka-worker:
+    <<: *clickroad-service
+    depends_on:
+      - kafka
+    environment:
+      MODE: worker
+      PERSIST_MODE: kafka
+      KAFKA_GROUP_ID: clickroad-json
+      SERIALIZATION_MODE: json
+      KAFKA_BROKER_LIST: kafka:29092
 
   redash-postgres:
     image: postgres
@@ -125,7 +139,7 @@ services:
     command: server
     restart: always
     ports:
-      - '5000:5000'
+      - '4500:5000'
     depends_on:
       - redash-redis
       - redash-postgres
