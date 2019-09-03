@@ -1,4 +1,9 @@
 .env
+.idea/*
 lib/
 coverage/
 node_modules/
+scala/target*
+scala/project/project/*
+scala/project/target/*
+
