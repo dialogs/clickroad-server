@@ -21,12 +21,8 @@ PB.targets in Compile := Seq(
 licenses += ("Apache-2.0", url(
   "https://www.apache.org/licenses/LICENSE-2.0.html"))
 
-publishMavenStyle := true
+publishTo := Some("Nexus Realm" at "https://nexus.transmit.im/repository/dialog/")
 
-bintrayOrganization := Some("dialog")
-
-bintrayRepository := "dialog"
-
-bintrayOmitLicense := true
+credentials += Credentials(Path.userHome / ".sbt" / ".credentials")
 
 DialogHouseRules.defaultDialogSettings
