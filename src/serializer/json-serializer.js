@@ -5,7 +5,7 @@ const { Kafka } = require('kafkajs');
 const { MetricMessage } = require('../proto/clickroad-private');
 const { timestamp, unpackValue, msFromTimestamp } = require('../proto/utils');
 
-function mapMetric({ metric }: MetricMessage) {
+function mapMetric(metric: $PropertyType<MetricMessage, 'metric'>) {
   if (metric.context) {
     const { context } = metric.context;
 
@@ -79,16 +79,21 @@ function mapMetric({ metric }: MetricMessage) {
 
 function createJsonSerializer(): Serializer {
   return {
-    serialize({ cid, ip, metric }: MetricMessage): Buffer {
-      return Buffer.from(
-        JSON.stringify({
-          ip,
-          cid,
-          serverTime: timestamp(Date.now()),
-          clientTime: timestamp(msFromTimestamp(metric.time)),
-          metric: mapMetric({ metric }),
-        }),
-      );
+    serialize({ cid, ip, metric }: MetricMessage) {
+      const { type, payload } = mapMetric(metric);
+
+      return {
+        type,
+        payload: Buffer.from(
+          JSON.stringify({
+            ip,
+            cid,
+            serverTime: Date.now(),
+            clientTime: msFromTimestamp(metric.time),
+            metric: payload,
+          }),
+        ),
+      };
     },
   };
 }

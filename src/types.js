@@ -7,6 +7,11 @@ export interface Producer {
   produce(messages: Array<MetricMessage>): Promise<void>;
 }
 
+export type SerializedMessage = {
+  type: string,
+  payload: Buffer,
+};
+
 export interface Serializer {
-  serialize(message: MetricMessage): Buffer;
+  serialize(message: MetricMessage): SerializedMessage;
 }

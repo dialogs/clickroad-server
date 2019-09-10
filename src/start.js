@@ -6,7 +6,6 @@ const {
   createGrpcServer,
   createKafkaProducer,
   createJsonSerializer,
-  createProtoSerializer,
 } = require('./index');
 const config = require('./config');
 
@@ -26,7 +25,9 @@ function createSerializer() {
     case 'json':
       return createJsonSerializer();
     default:
-      return createProtoSerializer();
+      throw new Error(
+        `Unexpected serialization mode ${config.SERIALIZATION_MODE}`,
+      );
   }
 }
 
@@ -35,9 +36,9 @@ async function startRestServer() {
   const producer = createKafkaProducer({
     logger,
     serializer,
-    topic: config.KAFKA_TOPIC,
     brokers: parseBrokerList(config.KAFKA_BROKER_LIST),
     clientId: config.KAFKA_CLIENT_ID,
+    topicPrefix: config.KAFKA_TOPIC_PREFIX,
   });
 
   const server = createRestServer({
@@ -57,9 +58,9 @@ async function startGrpcServer() {
   const producer = createKafkaProducer({
     logger,
     serializer,
-    topic: config.KAFKA_TOPIC,
     brokers: parseBrokerList(config.KAFKA_BROKER_LIST),
     clientId: config.KAFKA_CLIENT_ID,
+    topicPrefix: config.KAFKA_TOPIC_PREFIX,
   });
 
   const server = createGrpcServer({
