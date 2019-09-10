@@ -5,12 +5,8 @@ const {
   createRestServer,
   createGrpcServer,
   createKafkaProducer,
-  createKafkaConsumer,
-  createPgPersister,
-  createKafkaPersister,
   createJsonSerializer,
   createProtoSerializer,
-  createProtoDeserializer,
 } = require('./index');
 const config = require('./config');
 
@@ -31,13 +27,6 @@ function createSerializer() {
       return createJsonSerializer();
     default:
       return createProtoSerializer();
-  }
-}
-
-function createDeserializer() {
-  switch (config.SERIALIZATION_MODE) {
-    default:
-      return createProtoDeserializer();
   }
 }
 
@@ -84,40 +73,6 @@ async function startGrpcServer() {
   return () => Promise.all([server.stop(), producer.stop()]);
 }
 
-function createPersister() {
-  switch (config.PERSIST_MODE) {
-    case 'kafka':
-      return createKafkaPersister({
-        topic: config.KAFKA_PERSIST_TOPIC,
-        clientId: config.KAFKA_CLIENT_ID,
-        brokers: parseBrokerList(config.KAFKA_BROKER_LIST),
-        serializer: createSerializer(),
-      });
-
-    default:
-      return createPgPersister({
-        logger,
-        connection: config.PG_CONNECTION_STRING,
-      });
-  }
-}
-
-async function startWorker() {
-  const persister = await createPersister();
-
-  const consumer = await createKafkaConsumer({
-    logger,
-    persister,
-    topic: config.KAFKA_TOPIC,
-    brokers: parseBrokerList(config.KAFKA_BROKER_LIST),
-    groupId: config.KAFKA_GROUP_ID,
-    clientId: config.KAFKA_CLIENT_ID,
-    deserializer: createDeserializer(),
-  });
-
-  return () => Promise.all([consumer.stop(), persister.stop()]);
-}
-
 async function startUncaughtListener() {
   await new Promise((resolve, reject) => {
     const errorEvents = ['uncaughtException', 'unhandledRejection'];
@@ -133,10 +88,7 @@ const tasks = [startUncaughtListener()];
 
 switch (config.MODE) {
   case 'all':
-    tasks.push(startWorker(), startGrpcServer(), startRestServer());
-    break;
-  case 'worker':
-    tasks.push(startWorker());
+    tasks.push(startGrpcServer(), startRestServer());
     break;
   case 'grpc-server':
     tasks.push(startGrpcServer());
