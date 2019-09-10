@@ -11,25 +11,36 @@ object Publishing extends AutoPlugin {
   ) ++ settings()
 
   private def settings(): Seq[Def.Setting[_]] = {
-    sys.env.get("PUBLISH_TO").map(_.toLowerCase()).map {
-      case "nexus" =>
-        (sys.env.get("NEXUS_REPOSITORY_NAME"), sys.env.get("NEXUS_REPOSITORY_URL")) match {
-          case (Some(repoName), Some(repoUrl)) =>
-            Seq(
-              Some(publishTo := Some(repoName at repoUrl)),
-              (sys.env.get("NEXUS_USERNAME"), sys.env.get("NEXUS_PASSWORD")) match {
-                case (Some(username), Some(password)) =>
-                  Some(credentials += Credentials(repoName, new URL(repoUrl).getHost, username, password))
-                case _ =>
-                  Some(credentials ++= Seq(Credentials(Path.userHome / ".m2" / ".credentials"),
-                    Credentials(Path.userHome / ".sbt" / ".credentials")))
-              }
-            ).flatten
-          case _ => Seq.empty
-        }
+    val publishSource = sys.env.get("PUBLISH_TO")
+    val repoNameOpt = sys.env.get("NEXUS_REPOSITORY_NAME")
+    val repoUrlOpt = sys.env.get("NEXUS_REPOSITORY_URL")
 
-      case _ => Seq.empty
+    val publishSettingOpt = for {
+      pubTo <- publishSource if pubTo.toLowerCase == "nexus"
+      repoName <- repoNameOpt
+      repoUrl <- repoUrlOpt
+    } yield repoName at repoUrl
 
-    }.getOrElse(Seq.empty)
+    val envCredsOpt = for {
+      username <- sys.env.get("NEXUS_USERNAME")
+      password <- sys.env.get("NEXUS_PASSWORD")
+      repoName <- repoNameOpt
+      repoUrl <- repoUrlOpt
+      _ = println(s"Got $username:$password credentials from env")
+    } yield
+      Seq(Credentials(repoName, new URL(repoUrl).getHost, username, password))
+
+    val creds: Seq[Credentials] = envCredsOpt.getOrElse {
+      println(s"Using credentials from `.credentials` files")
+      Seq(
+        Credentials(Path.userHome / ".m2" / ".credentials"),
+        Credentials(Path.userHome / ".sbt" / ".credentials")
+      )
+    }
+
+    Seq(
+      credentials in ThisBuild ++= creds,
+      publishTo in ThisBuild := publishSettingOpt
+    )
   }
 }

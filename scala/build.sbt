@@ -1,28 +1,29 @@
-import im.dlg.DialogHouseRules
+organization := "im.dlg.clickroad"
 
-organization := "im.dlg"
+name := "api"
 
-name := "dialog-clickroad-api"
+version := "0.0.1-SNAPSHOT"
 
-version := "0.0.1"
+scalaVersion := "2.13.0"
 
-scalaVersion := "2.11.11"
+crossScalaVersions := List("2.11.11", "2.12.8", "2.13.0")
 
-libraryDependencies ++= DialogHouseRules.scalapbGrpcDeps ++ DialogHouseRules.scalapbDeps
+libraryDependencies ++= Seq(
+  "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
+  "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion,
+  "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion
+)
 
 PB.protoSources in Compile += baseDirectory.value / ".." / "proto"
 
 excludeFilter in PB.generate := "clickroad-private.proto"
 
 PB.targets in Compile := Seq(
-  scalapb.gen(singleLineToString = true) → (sourceManaged in Compile).value
+  scalapb.gen(singleLineToProtoString = true) → (sourceManaged in Compile).value
 )
 
-licenses += ("Apache-2.0", url(
-  "https://www.apache.org/licenses/LICENSE-2.0.html"))
+licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html"))
 
-publishTo := Some("Nexus Realm" at "https://nexus.transmit.im/repository/dialog/")
+publishMavenStyle := true
 
-credentials += Credentials(Path.userHome / ".sbt" / ".credentials")
-
-DialogHouseRules.defaultDialogSettings
+enablePlugins(Publishing)
