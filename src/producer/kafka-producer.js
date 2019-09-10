@@ -2,11 +2,7 @@
 
 import type { Producer, Serializer } from '../types';
 const { Kafka } = require('kafkajs');
-const map = require('lodash/fp/map');
-const flow = require('lodash/fp/flow');
-const values = require('lodash/fp/values');
-const groupBy = require('lodash/fp/groupBy');
-const mapValues = require('lodash/fp/mapValues');
+const _ = require('lodash');
 const { MetricMessage } = require('../proto/clickroad-private');
 
 type Config = {
@@ -28,16 +24,16 @@ function createKafkaProducer(config: Config): Producer {
     async produce(messages) {
       await producer.connect();
 
-      const topicMessages = flow(
-        map((message) => config.serializer.serialize(message)),
-        groupBy('type'),
-        mapValues(map('payload')),
-        mapValues((values, topic) => ({
+      const topicMessages = _(messages)
+        .map((message) => config.serializer.serialize(message))
+        .groupBy('type')
+        .mapValues(_.map('payload'))
+        .mapValues((values, topic) => ({
           topic: config.topicPrefix + topic,
           messages: values.map((value) => ({ value })),
-        })),
-        values(),
-      )(messages);
+        }))
+        .values()
+        .value();
 
       await producer.sendBatch({ topicMessages });
     },
