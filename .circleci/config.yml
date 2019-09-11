@@ -18,6 +18,7 @@ jobs:
           path: reports/junit
       - store_artifacts:
           path: coverage
+
   build:
     docker:
       - image: circleci/node:lts
@@ -34,11 +35,52 @@ jobs:
       - run: echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin docker.pkg.github.com
       - run: docker push $DOCKER_IMAGE
 
+  build/sbt:
+    working_directory: ~/scala
+    docker:
+      - image: circleci/openjdk:8-jdk
+    environment:
+      SBT_VERSION: 1.2.8
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+    steps:
+      - run:
+          name: Get sbt binary
+          command: |
+            sudo apt update && sudo apt install -y curl
+            sudo curl -L -o sbt-$SBT_VERSION.deb https://dl.bintray.com/sbt/debian/sbt-$SBT_VERSION.deb
+            sudo dpkg -i sbt-$SBT_VERSION.deb
+            sudo rm sbt-$SBT_VERSION.deb
+            sudo apt-get update
+            sudo apt-get install -y sbt python-pip git
+            sudo pip install awscli
+            sudo apt-get clean && sudo apt-get autoclean
+      - checkout
+      - run: echo 'start building and publishing clickroad api for scala'
+      - run: echo 'export PUBLISH_TO=$CIRCLE_NEXUS' >> $BASH_ENV
+      - run: echo 'export NEXUS_REPOSITORY_NAME=$CIRCLE_NEXUS_REPOSITORY_NAME' >> $BASH_ENV
+      - run: echo 'export NEXUS_REPOSITORY_URL=$CIRCLE_NEXUS_REPOSITORY_URL' >> $BASH_ENV
+      - run: echo 'export NEXUS_USERNAME=$CIRCLE_NEXUS_USERNAME' >> $BASH_ENV
+      - run: echo 'export NEXUS_PASSWORD=$CIRCLE_NEXUS_PASSWORD' >> $BASH_ENV
+      - run: echo $PUBLISH_TO
+      - restore_cache:
+          key: sbt-cache
+      - run: sbt clean compile
+      - save_cache:
+          key: sbt-cache
+          paths:
+            - "~/.ivy2/cache"
+            - "~/.sbt"
+            - "~/.m2"
+      - run: sbt publish
+
 workflows:
   version: 2
   test-build:
     jobs:
       - test:
+          requires:
+            - build_sbt
           filters:
             branches:
               ignore:
@@ -50,3 +92,11 @@ workflows:
             branches:
               only:
                 - master
+      - build/sbt:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - master
+                - feature/scalapb-schema-builder
