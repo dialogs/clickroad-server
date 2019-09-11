@@ -1,4 +1,6 @@
 .env
+junit.xml
+
 lib/
 coverage/
 node_modules/

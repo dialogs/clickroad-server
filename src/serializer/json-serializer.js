@@ -17,7 +17,7 @@ function mapMetric(metric: $PropertyType<MetricMessage, 'metric'>) {
     const { name, source, url } = metric.screenView;
 
     return {
-      type: 'screen_view',
+      type: 'screen-view',
       payload: {
         name,
         source: unpackValue(source),

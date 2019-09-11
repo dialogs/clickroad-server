@@ -27,7 +27,7 @@ function createKafkaProducer(config: Config): Producer {
       const topicMessages = _(messages)
         .map((message) => config.serializer.serialize(message))
         .groupBy('type')
-        .mapValues(_.map('payload'))
+        .mapValues((messages) => _.map(messages, 'payload'))
         .mapValues((values, topic) => ({
           topic: config.topicPrefix + topic,
           messages: values.map((value) => ({ value })),
