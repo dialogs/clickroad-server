@@ -79,8 +79,6 @@ workflows:
   test-build:
     jobs:
       - test:
-          requires:
-            - build_sbt
           filters:
             branches:
               ignore:
