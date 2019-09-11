@@ -56,13 +56,6 @@ jobs:
             sudo pip install awscli
             sudo apt-get clean && sudo apt-get autoclean
       - checkout
-      - run: echo 'start building and publishing clickroad api for scala'
-      - run: echo 'export PUBLISH_TO=$CIRCLE_NEXUS' >> $BASH_ENV
-      - run: echo 'export NEXUS_REPOSITORY_NAME=$CIRCLE_NEXUS_REPOSITORY_NAME' >> $BASH_ENV
-      - run: echo 'export NEXUS_REPOSITORY_URL=$CIRCLE_NEXUS_REPOSITORY_URL' >> $BASH_ENV
-      - run: echo 'export NEXUS_USERNAME=$CIRCLE_NEXUS_USERNAME' >> $BASH_ENV
-      - run: echo 'export NEXUS_PASSWORD=$CIRCLE_NEXUS_PASSWORD' >> $BASH_ENV
-      - run: echo $PUBLISH_TO
       - restore_cache:
           key: sbt-cache
       - run: sbt clean compile
