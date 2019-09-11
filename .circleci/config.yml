@@ -70,14 +70,14 @@ jobs:
                     echo "user=$NEXUS_USERNAME" >> ~/.sbt/.credentials
                     echo "password=$NEXUS_PASSWORD" >> ~/.sbt/.credentials
                     cat ~/.sbt/.credentials
-      - run:
-          name: write m2 credentials
-          command: |
-                    echo "realm=Sonatype Nexus Repository Manager" > ~/.m2/.credentials
-                    echo "host=nexus.transmit.im" >> ~/.m2/.credentials
-                    echo "user=$NEXUS_USERNAME" >> ~/.m2/.credentials
-                    echo "password=$NEXUS_PASSWORD" >> ~/.m2/.credentials
-                    cat ~/.m2/.credentials
+#      - run:
+#          name: write m2 credentials
+#          command: |
+#                    echo "realm=Sonatype Nexus Repository Manager" > ~/.m2/.credentials
+#                    echo "host=nexus.transmit.im" >> ~/.m2/.credentials
+#                    echo "user=$NEXUS_USERNAME" >> ~/.m2/.credentials
+#                    echo "password=$NEXUS_PASSWORD" >> ~/.m2/.credentials
+#                    cat ~/.m2/.credentials
       - save_cache:
           key: sbt-cache
           paths:
