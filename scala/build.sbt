@@ -4,9 +4,9 @@ name := "api"
 
 version := "0.0.1-SNAPSHOT"
 
-scalaVersion := "2.13.0"
+scalaVersion := "2.11.12"
 
-crossScalaVersions := List("2.11.11", "2.12.8", "2.13.0")
+crossScalaVersions := List("2.11.12", "2.12.8", "2.13.0")
 
 libraryDependencies ++= Seq(
   "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
