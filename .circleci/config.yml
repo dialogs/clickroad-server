@@ -90,6 +90,7 @@ workflows:
             branches:
               only:
                 - master
+                - feature/scalapb-schema-builder
       - build/sbt:
           requires:
             - build
