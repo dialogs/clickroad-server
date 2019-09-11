@@ -36,7 +36,6 @@ jobs:
       - run: docker push $DOCKER_IMAGE
 
   build/sbt:
-    working_directory: ~/scala
     docker:
       - image: circleci/openjdk:8-jdk
     environment:
@@ -58,14 +57,18 @@ jobs:
       - checkout
       - restore_cache:
           key: sbt-cache
-      - run: sbt clean compile
+      - run: |
+              cd scala
+              sbt clean compile
       - save_cache:
           key: sbt-cache
           paths:
             - "~/.ivy2/cache"
             - "~/.sbt"
             - "~/.m2"
-      - run: sbt publish
+      - run: |
+              cd scala
+              sbt publish
 
 workflows:
   version: 2
