@@ -46,29 +46,49 @@ jobs:
       - run:
           name: Get sbt binary
           command: |
-            sudo apt update && sudo apt install -y curl
-            sudo curl -L -o sbt-$SBT_VERSION.deb https://dl.bintray.com/sbt/debian/sbt-$SBT_VERSION.deb
-            sudo dpkg -i sbt-$SBT_VERSION.deb
-            sudo rm sbt-$SBT_VERSION.deb
-            sudo apt-get update
-            sudo apt-get install -y sbt python-pip git
-            sudo pip install awscli
-            sudo apt-get clean && sudo apt-get autoclean
+                    sudo apt update && sudo apt install -y curl
+                    sudo curl -L -o sbt-$SBT_VERSION.deb https://dl.bintray.com/sbt/debian/sbt-$SBT_VERSION.deb
+                    sudo dpkg -i sbt-$SBT_VERSION.deb
+                    sudo rm sbt-$SBT_VERSION.deb
+                    sudo apt-get update
+                    sudo apt-get install -y sbt python-pip git
+                    sudo pip install awscli
+                    sudo apt-get clean && sudo apt-get autoclean
       - checkout
       - restore_cache:
           key: sbt-cache
-      - run: |
-              cd scala
-              sbt clean compile
+      - run:
+          name: compile protobuf sources with scalapb
+          command: |
+                    cd scala
+                    sbt clean compile
+      - run:
+          name: write sbt credentials
+          command: |
+                    echo "realm=Sonatype Nexus Repository Manager" > ~/.sbt/.credentials
+                    echo "host=nexus.transmit.im" >> ~/.sbt/.credentials
+                    echo "user=$NEXUS_USERNAME" >> ~/.sbt/.credentials
+                    echo "password=$NEXUS_PASSWORD" >> ~/.sbt/.credentials
+                    cat ~/.sbt/.credentials
+      - run:
+          name: write m2 credentials
+          command: |
+                    echo "realm=Sonatype Nexus Repository Manager" > ~/.m2/.credentials
+                    echo "host=nexus.transmit.im" >> ~/.m2/.credentials
+                    echo "user=$NEXUS_USERNAME" >> ~/.m2/.credentials
+                    echo "password=$NEXUS_PASSWORD" >> ~/.m2/.credentials
+                    cat ~/.m2/.credentials
       - save_cache:
           key: sbt-cache
           paths:
             - "~/.ivy2/cache"
             - "~/.sbt"
             - "~/.m2"
-      - run: |
-              cd scala
-              sbt publish
+      - run:
+          name: publish artifact
+          command: |
+                    cd scala
+                    sbt publish
 
 workflows:
   version: 2
