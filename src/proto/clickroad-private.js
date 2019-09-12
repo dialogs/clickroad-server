@@ -107,6 +107,6 @@ function metricMessageFromJson(cid: string, ip: string, json: Array<any>) {
 }
 
 module.exports = {
+  MetricMessage,
   metricMessageFromJson,
-  MetricMessage: root.lookupType('clickroad.MetricMessage'),
 };

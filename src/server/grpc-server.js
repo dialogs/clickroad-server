@@ -1,13 +1,14 @@
 // @flow strict
 
 import type { Producer } from '../types';
+import type { Logger } from 'pino';
 const { Server, ServerCredentials, status } = require('grpc');
 const { ClickRoad } = require('../proto/clickroad-public');
 const { MetricMessage } = require('../proto/clickroad-private');
 const getOrCreateContextId = require('../utils/context-id');
 
 type Config = {
-  logger: typeof console,
+  logger: Logger,
   producer: Producer,
   trustProxy: boolean,
 };
