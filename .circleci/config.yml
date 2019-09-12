@@ -69,7 +69,6 @@ jobs:
                     echo "host=nexus.transmit.im" >> ~/.sbt/.credentials
                     echo "user=$NEXUS_PUBLISHER_USER" >> ~/.sbt/.credentials
                     echo "password=$NEXUS_PUBLISHER_PASS" >> ~/.sbt/.credentials
-                    cat ~/.sbt/.credentials
       - run:
           name: write m2 credentials
           command: |
@@ -78,7 +77,6 @@ jobs:
                     echo "host=nexus.transmit.im" >> ~/.m2/.credentials
                     echo "user=$NEXUS_PUBLISHER_USER" >> ~/.m2/.credentials
                     echo "password=$NEXUS_PUBLISHER_PASS" >> ~/.m2/.credentials
-                    cat ~/.m2/.credentials
       - save_cache:
           key: sbt-cache
           paths:
