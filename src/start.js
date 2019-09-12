@@ -5,12 +5,7 @@ const {
   createRestServer,
   createGrpcServer,
   createKafkaProducer,
-  createKafkaConsumer,
-  createPgPersister,
-  createKafkaPersister,
   createJsonSerializer,
-  createProtoSerializer,
-  createProtoDeserializer,
 } = require('./index');
 const config = require('./config');
 
@@ -30,14 +25,9 @@ function createSerializer() {
     case 'json':
       return createJsonSerializer();
     default:
-      return createProtoSerializer();
-  }
-}
-
-function createDeserializer() {
-  switch (config.SERIALIZATION_MODE) {
-    default:
-      return createProtoDeserializer();
+      throw new Error(
+        `Unexpected serialization mode ${config.SERIALIZATION_MODE}`,
+      );
   }
 }
 
@@ -46,9 +36,9 @@ async function startRestServer() {
   const producer = createKafkaProducer({
     logger,
     serializer,
-    topic: config.KAFKA_TOPIC,
     brokers: parseBrokerList(config.KAFKA_BROKER_LIST),
     clientId: config.KAFKA_CLIENT_ID,
+    topicPrefix: config.KAFKA_TOPIC_PREFIX,
   });
 
   const server = createRestServer({
@@ -68,9 +58,9 @@ async function startGrpcServer() {
   const producer = createKafkaProducer({
     logger,
     serializer,
-    topic: config.KAFKA_TOPIC,
     brokers: parseBrokerList(config.KAFKA_BROKER_LIST),
     clientId: config.KAFKA_CLIENT_ID,
+    topicPrefix: config.KAFKA_TOPIC_PREFIX,
   });
 
   const server = createGrpcServer({
@@ -82,40 +72,6 @@ async function startGrpcServer() {
   await server.listen({ host: config.GRPC_HOST, port: config.GRPC_PORT });
 
   return () => Promise.all([server.stop(), producer.stop()]);
-}
-
-function createPersister() {
-  switch (config.PERSIST_MODE) {
-    case 'kafka':
-      return createKafkaPersister({
-        topic: config.KAFKA_PERSIST_TOPIC,
-        clientId: config.KAFKA_CLIENT_ID,
-        brokers: parseBrokerList(config.KAFKA_BROKER_LIST),
-        serializer: createSerializer(),
-      });
-
-    default:
-      return createPgPersister({
-        logger,
-        connection: config.PG_CONNECTION_STRING,
-      });
-  }
-}
-
-async function startWorker() {
-  const persister = await createPersister();
-
-  const consumer = await createKafkaConsumer({
-    logger,
-    persister,
-    topic: config.KAFKA_TOPIC,
-    brokers: parseBrokerList(config.KAFKA_BROKER_LIST),
-    groupId: config.KAFKA_GROUP_ID,
-    clientId: config.KAFKA_CLIENT_ID,
-    deserializer: createDeserializer(),
-  });
-
-  return () => Promise.all([consumer.stop(), persister.stop()]);
 }
 
 async function startUncaughtListener() {
@@ -133,10 +89,7 @@ const tasks = [startUncaughtListener()];
 
 switch (config.MODE) {
   case 'all':
-    tasks.push(startWorker(), startGrpcServer(), startRestServer());
-    break;
-  case 'worker':
-    tasks.push(startWorker());
+    tasks.push(startGrpcServer(), startRestServer());
     break;
   case 'grpc-server':
     tasks.push(startGrpcServer());
