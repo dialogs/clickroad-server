@@ -1,6 +1,14 @@
 .env
+.idea/*
+lib/
+coverage/
+node_modules/
+scala/target*
+scala/project/project/*
+scala/project/target/*
 junit.xml
 
 lib/
 coverage/
 node_modules/
+

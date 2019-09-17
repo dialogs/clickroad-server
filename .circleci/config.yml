@@ -30,6 +30,7 @@ jobs:
           path: reports/junit
       - store_artifacts:
           path: coverage
+
   build:
     docker:
       - image: circleci/node:lts
@@ -46,6 +47,60 @@ jobs:
       - run: echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin docker.pkg.github.com
       - run: docker push $DOCKER_IMAGE
 
+  build/sbt:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    environment:
+      SBT_VERSION: 1.2.8
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+    steps:
+      - run:
+          name: Get sbt binary
+          command: |
+                    sudo apt update && sudo apt install -y curl
+                    sudo curl -L -o sbt-$SBT_VERSION.deb https://dl.bintray.com/sbt/debian/sbt-$SBT_VERSION.deb
+                    sudo dpkg -i sbt-$SBT_VERSION.deb
+                    sudo rm sbt-$SBT_VERSION.deb
+                    sudo apt-get update
+                    sudo apt-get install -y sbt python-pip git
+                    sudo pip install awscli
+                    sudo apt-get clean && sudo apt-get autoclean
+      - checkout
+      - restore_cache:
+          key: sbt-cache
+      - run:
+          name: compile protobuf sources with scalapb
+          command: |
+                    cd scala
+                    sbt clean compile
+      - run:
+          name: write sbt credentials
+          command: |
+                    echo "realm=Sonatype Nexus Repository Manager" > ~/.sbt/.credentials
+                    echo "host=nexus.transmit.im" >> ~/.sbt/.credentials
+                    echo "user=$NEXUS_PUBLISHER_USER" >> ~/.sbt/.credentials
+                    echo "password=$NEXUS_PUBLISHER_PASS" >> ~/.sbt/.credentials
+      - run:
+          name: write m2 credentials
+          command: |
+                    mkdir ~/.m2
+                    echo "realm=Sonatype Nexus Repository Manager" > ~/.m2/.credentials
+                    echo "host=nexus.transmit.im" >> ~/.m2/.credentials
+                    echo "user=$NEXUS_PUBLISHER_USER" >> ~/.m2/.credentials
+                    echo "password=$NEXUS_PUBLISHER_PASS" >> ~/.m2/.credentials
+      - save_cache:
+          key: sbt-cache
+          paths:
+            - "~/.ivy2/cache"
+            - "~/.sbt"
+            - "~/.m2"
+      - run:
+          name: publish artifact
+          command: |
+                    cd scala
+                    sbt publish
+
 workflows:
   version: 2
   test-build:
@@ -58,6 +113,13 @@ workflows:
       - build:
           requires:
             - test
+          filters:
+            branches:
+              only:
+                - master
+      - build/sbt:
+          requires:
+            - build
           filters:
             branches:
               only:
