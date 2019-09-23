@@ -117,6 +117,7 @@ workflows:
             branches:
               only:
                 - master
+                - chore/update-scala-version
       - build/sbt:
           requires:
             - build
@@ -124,3 +125,4 @@ workflows:
             branches:
               only:
                 - master
+                - chore/update-scala-version
