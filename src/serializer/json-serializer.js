@@ -84,15 +84,18 @@ function createJsonSerializer(): Serializer {
 
       return {
         type,
-        payload: Buffer.from(
-          JSON.stringify({
-            ip,
-            cid,
-            serverTime: Date.now(),
-            clientTime: msFromTimestamp(metric.time),
-            metric: payload,
-          }),
-        ),
+        payload: {
+          key: cid,
+          value: Buffer.from(
+            JSON.stringify({
+              ip,
+              cid,
+              serverTime: Date.now(),
+              clientTime: msFromTimestamp(metric.time),
+              metric: payload,
+            }),
+          ),
+        },
       };
     },
   };
