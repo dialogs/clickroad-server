@@ -90,8 +90,7 @@ function createJsonSerializer(): Serializer {
             JSON.stringify({
               ip,
               cid,
-              serverTime: Date.now(),
-              clientTime: msFromTimestamp(metric.time),
+              time: msFromTimestamp(metric.time),
               metric: payload,
             }),
           ),
