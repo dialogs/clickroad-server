@@ -55,7 +55,11 @@ async function kafkaCat({ brokers, clientId, groupId, limit, deserialize }) {
   const messages = [];
   await consumer.run({
     async eachMessage({ topic, message }) {
-      messages.push({ topic, message: deserialize(message.value) });
+      messages.push({
+        topic,
+        key: message.key.toString('utf-8'),
+        message: deserialize(message.value),
+      });
     },
   });
 
@@ -153,13 +157,15 @@ test('e2e: gRPC Server correctly produce messages', async () => {
   const [context, screenView] = messages;
 
   expect(context.topic).toBe(`${KAFKA_TOPIC_PREFIX}context`);
+  expect(context.key).toBe(response.cid);
   expect(context.message.cid).toBe(response.cid);
-  expect(context.message.clientTime).toBe(msFromTimestamp(time));
+  expect(context.message.time).toBe(msFromTimestamp(time));
   expect(context.message.metric).toEqual({ foo: 'bar' });
 
   expect(screenView.topic).toBe(`${KAFKA_TOPIC_PREFIX}screen-view`);
+  expect(context.key).toBe(response.cid);
   expect(screenView.message.cid).toBe(response.cid);
-  expect(screenView.message.clientTime).toBe(msFromTimestamp(time));
+  expect(screenView.message.time).toBe(msFromTimestamp(time));
   expect(screenView.message.metric).toEqual({
     name: 'test',
     source: 'test',

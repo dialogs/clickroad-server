@@ -9,7 +9,10 @@ export interface Producer {
 
 export type SerializedMessage = {
   type: string,
-  payload: Buffer,
+  payload: {
+    key: string,
+    value: Buffer,
+  },
 };
 
 export interface Serializer {
