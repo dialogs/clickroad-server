@@ -2,9 +2,9 @@ organization := "im.dlg.clickroad"
 
 name := "api"
 
-version := "0.0.1-SNAPSHOT"
+version := "0.0.2-SNAPSHOT"
 
-scalaVersion := "2.11.12"
+scalaVersion := "2.12.8"
 
 crossScalaVersions := List("2.11.12", "2.12.8", "2.13.0")
 
