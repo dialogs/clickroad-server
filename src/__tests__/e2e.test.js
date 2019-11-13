@@ -144,17 +144,36 @@ test('e2e: gRPC Server correctly produce messages', async () => {
     { deadline: Date.now() + 1000 },
   );
 
+  const response2 = await trackEvent(
+    {
+      cid: response.cid,
+      metrics: [
+        {
+          time,
+          screenView: {
+            name: 'test2',
+            source: packValue('test2'),
+            url: packValue('test2'),
+          },
+        },
+      ],
+    },
+    { deadline: Date.now() + 1000 },
+  );
+
+  expect(response.cid).toBe(response2.cid);
+
   const messages = await kafkaCat({
-    limit: 2,
+    limit: 3,
     brokers: KAFKA_BROKERS,
     clientId: KAFKA_CLIENT_ID,
     groupId: 'e2e-clickroad-test-consumer',
     deserialize: (buffer) => JSON.parse(buffer),
   });
 
-  expect(messages).toHaveLength(2);
+  expect(messages).toHaveLength(3);
 
-  const [context, screenView] = messages;
+  const [context, screenView, screenView2] = messages;
 
   expect(context.topic).toBe(`${KAFKA_TOPIC_PREFIX}context`);
   expect(context.key).toBe(response.cid);
@@ -170,5 +189,15 @@ test('e2e: gRPC Server correctly produce messages', async () => {
     name: 'test',
     source: 'test',
     url: 'test',
+  });
+
+  expect(screenView2.topic).toBe(`${KAFKA_TOPIC_PREFIX}screen-view`);
+  expect(context.key).toBe(response2.cid);
+  expect(screenView2.message.cid).toBe(response.cid);
+  expect(screenView2.message.time).toBe(msFromTimestamp(time));
+  expect(screenView2.message.metric).toEqual({
+    name: 'test2',
+    source: 'test2',
+    url: 'test2',
   });
 });

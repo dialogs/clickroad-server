@@ -19,9 +19,7 @@ function createGrpcServer({ logger, producer }: Config) {
   server.addService(ClickRoad.service, {
     trackEvent(call, callback) {
       const ip = call.metadata.get('x-forwarded-for')[0] || '0.0.0.0';
-      const cid = getOrCreateContextId(
-        call.request.cid && call.request.cid.value,
-      );
+      const cid = getOrCreateContextId(call.request.cid);
 
       const messages = call.request.metrics.map((metric) =>
         MetricMessage.create({
