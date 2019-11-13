@@ -77,7 +77,7 @@ const config: Config = parseEnv({
       },
       SERIALIZATION_MODE: {
         type: 'string',
-        default: 'proto',
+        default: 'json',
         enum: ['json'],
       },
     },
