@@ -35,7 +35,7 @@ services:
           - path: clickroad.ClickRoad
             options:
               require-auth: true
-              headers:
-              - x-forwarded-for
+              # headers:
+              # - x-forwarded-for
     egress:
       kafka:
