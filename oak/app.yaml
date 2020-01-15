@@ -34,7 +34,7 @@ services:
           external-grpc-api:
           - path: clickroad.ClickRoad
             options:
-              require-auth: true
+              require-auth: false
               # headers:
               # - x-forwarded-for
     egress:
