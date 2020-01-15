@@ -1,0 +1,42 @@
+services:
+  this:
+    deploy:
+      envs:
+        REST_PORT: ${this.ingress.http-api.port}
+        GRPC_PORT: ${this.ingress.grpc-api.port}
+        KAFKA_TOPIC: metrics
+        MODE: grpc-server
+        KAFKA_GROUP_ID: clickroad
+        KAFKA_CLIENT_ID: clickroad
+        KAFKA_BROKER_LIST: ${join(",",formatlist("%s:%s",this.egress.kafka.broker.hosts,this.egress.kafka.broker.port))}
+# This sets max old space size to "total limit in bytes / 1024 * 1024 * 100 * 75" = 75% of available memory
+      shell: >-
+        MEM=$(( $(cat /sys/fs/cgroup/memory/memory.limit_in_bytes) / 104857600 * 75 ));
+        exec node --max-old-space-size=$MEM lib/start.js
+      resources:
+        minimal:
+          requests:
+            cpu: 50m
+            memory: 96Mi
+          limits:
+            cpu: 200m
+            memory: 96Mi
+        normal:
+          requests:
+            cpu: 200m
+            memory: 512Mi
+          limits:
+            cpu: 1
+            memory: 512Mi
+    ingress:
+      grpc-api:
+        port: 3001
+        controllers:
+          external-grpc-api:
+          - path: clickroad.ClickRoad
+            options:
+              require-auth: true
+              headers:
+              - x-forwarded-for
+    egress:
+      kafka:
