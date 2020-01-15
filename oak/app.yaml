@@ -2,7 +2,6 @@ services:
   this:
     deploy:
       envs:
-        REST_PORT: ${this.ingress.http-api.port}
         GRPC_PORT: ${this.ingress.grpc-api.port}
         KAFKA_TOPIC: metrics
         MODE: grpc-server
